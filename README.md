@@ -1,3 +1,3 @@
 # Short-URL
 
-![screenshot](https://github.com/mingkyme/Short-URL/images/screenshot.png)
+![screenshot](https://github.com/mingkyme/Short-URL/blob/main/images/screenshot.png)
