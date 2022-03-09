@@ -4,7 +4,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static('public'));
 
-var connection = require('./secret/password');
+const getConnection = require('./secret/password.js');
 app.post('/url',function(req,res){
     let key = makeid(10);
     let data = req.body.data;
@@ -12,29 +12,37 @@ app.post('/url',function(req,res){
         res.sendStatus(400);
         return;
     }
-    connection.query('INSERT INTO url(url, data) VALUES(?,?);',[key,data],function(error, results, fields){
-        if(error){
-            console.log(error);
-            res.sendStatus(500);
-        }else{
-            res.send(key);
-        }
-    });
+    getConnection((connection)=>{
+        connection.query('INSERT INTO url(url, data) VALUES(?,?);',[key,data],function(error, results, fields){
+            if(error){
+                console.log(error);
+                res.sendStatus(500);
+            }else{
+                res.send(key);
+            }
+        });
+        connection.release();
+    })
+    
 });
 
 app.get('/:id',function(req,res){
-    connection.query('SELECT data FROM url WHERE url = ?;',[req.params.id],function(error, results, fields){
-        if(error){
-            console.log(error);
-            res.sendStatus(500);
-        }else{
-            if(results.length>0){
-                res.send(results[0].data);
+    getConnection((connection)=>{
+        connection.query('SELECT data FROM url WHERE url = ?;',[req.params.id],function(error, results, fields){
+            if(error){
+                console.log(error);
+                res.sendStatus(500);
             }else{
-                res.sendStatus(404);
+                if(results.length>0){
+                    res.redirect(results[0].data);
+                }else{
+                    res.sendStatus(404);
+                }
             }
-        }
-    });
+        });
+        connection.release();
+    })
+    
 })
 
 app.listen(11001);
